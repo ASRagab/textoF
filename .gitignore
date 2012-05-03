@@ -25,3 +25,9 @@
 # osx noise
 .DS_Store
 profile
+
+#data folder noise (I want to keep csv and tsv and txt files)
+*.pdf
+*.ttf
+*.jpg
+*.png
