@@ -10,3 +10,18 @@
 *.lai
 *.la
 *.a
+
+# xcode noise
+*/build/*
+*/*/*.pbxuser
+*/*/*.mode1v3
+*/*/xcuserdata/*
+*/*/project.xcworkspace
+
+#folders
+*/bin/*.app
+*/bin/*.app
+
+# osx noise
+.DS_Store
+profile
