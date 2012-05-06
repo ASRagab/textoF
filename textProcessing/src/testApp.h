@@ -1,5 +1,6 @@
 #pragma once
 #include "ofMain.h"
+#include "ofxTileSaver.h"
 
 
 class nameStruct{
@@ -35,11 +36,15 @@ public:
 struct foundPair{
     ofPoint textOne;
     ofPoint textTwo;
+    int countOne;
+    int countTwo;
     string theMatchedName;
    
-    foundPair(ofPoint _textOne, ofPoint _textTwo, string _theMatchedName){
+    foundPair(ofPoint _textOne, ofPoint _textTwo, string _theMatchedName, int _countOne, int _countTwo){
         textOne = _textOne;
         textTwo = _textTwo;
+        countOne = _countOne;
+        countTwo = _countTwo;
         theMatchedName = _theMatchedName;
     }
 };
@@ -71,21 +76,34 @@ class testApp : public ofBaseApp{
         float maxLocation(vector<nameStruct>_structofNames);
         static bool sortOnAppearances(const nameStruct &alpha, const nameStruct &beta);
         static bool sortOnName(const nameStruct &alpha, const nameStruct &beta);
-        void drawVizVector(vector<nameStruct> & _theVectortoDraw, int _startItems, int _numItems, int _fontSize, 
-                           bool _connectionMoused = FALSE);
-        vector<foundPair > findConnection(vector<nameStruct> &textOne, vector<nameStruct> &textTwo, int _startItems, int _numItems, int _numItemsTwo);
+        void drawVizVector(string _vectorTitle, vector<nameStruct> &_theVectortoDraw, string _sort, int _startItems, int _numItems, int _fontSize, 
+                           bool _connectionMoused = FALSE );
+        vector<foundPair > findConnection(vector<nameStruct> &textOne, vector<nameStruct> &textTwo, int _startItems, int _startItemsTwo, int _numItems, int _numItemsTwo);
         void drawConnection(vector<foundPair> &foundMatches, bool _connectionMoused = FALSE);
         void highlightConnection(foundPair &highlightedMatch);
         void drawName(nameStruct &text);
+        void drawConnectionFacts(nameStruct _left, nameStruct _right);
         void drawBackground();
+    
+        ofxTileSaver saveVector;
     
         int numItems;
         int numItemsTwo;
+        int startItems;
+        int startItemsTwo;
+    
         vector<nameStruct> vizQuran;
         vector<nameStruct> vizNT;
         vector<foundPair> QandNT;
+    
         ofTrueTypeFont myFont;
+        ofTrueTypeFont bgFont;
+    
         bool connectionMousedOver;
+        bool bsaveScreen;
+    
+        ofImage background;
+        string inputItems;
       
 };
 
