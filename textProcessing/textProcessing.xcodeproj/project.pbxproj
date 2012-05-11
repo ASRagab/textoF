@@ -76,6 +76,8 @@
 		E4C2424410CC5A17004149E2 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		E4C2424510CC5A17004149E2 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		E4C2424610CC5A17004149E2 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = /System/Library/Frameworks/IOKit.framework; sourceTree = "<absolute>"; };
+		E4CCE3DD15547DBC0064357E /* ofxTileSaver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxTileSaver.h; sourceTree = "<group>"; };
+		E4CCE3DE15547DBC0064357E /* ofxTileSaverImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxTileSaverImage.h; sourceTree = "<group>"; };
 		E4EB691F138AFCF100A09F29 /* CoreOF.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = CoreOF.xcconfig; path = ../../../libs/openFrameworksCompiled/project/osx/CoreOF.xcconfig; sourceTree = SOURCE_ROOT; };
 		E4EB6923138AFD0F00A09F29 /* Project.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Project.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -108,6 +110,7 @@
 		BB4B014C10F69532006C3DED /* addons */ = {
 			isa = PBXGroup;
 			children = (
+				E4CCE3DB15547DBC0064357E /* ofxTileSaver */,
 			);
 			name = addons;
 			sourceTree = "<group>";
@@ -178,6 +181,23 @@
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
+		};
+		E4CCE3DB15547DBC0064357E /* ofxTileSaver */ = {
+			isa = PBXGroup;
+			children = (
+				E4CCE3DC15547DBC0064357E /* src */,
+			);
+			path = ofxTileSaver;
+			sourceTree = "<group>";
+		};
+		E4CCE3DC15547DBC0064357E /* src */ = {
+			isa = PBXGroup;
+			children = (
+				E4CCE3DE15547DBC0064357E /* ofxTileSaverImage.h */,
+				E4CCE3DD15547DBC0064357E /* ofxTileSaver.h */,
+			);
+			path = src;
+			sourceTree = "<group>";
 		};
 		E4EEC9E9138DF44700A80321 /* openFrameworks */ = {
 			isa = PBXGroup;

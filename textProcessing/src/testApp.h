@@ -49,6 +49,28 @@ struct foundPair{
     }
 };
 
+struct textPair{
+    string ctvTitleOne;
+    string ctvTitleTwo;
+    
+    int ctvNumItems;
+    int ctvNumItemsTwo;
+    
+    vector<nameStruct> createdTextVectorOne;
+    vector<nameStruct> createdTextVectorTwo;
+    
+    textPair(string _ctvTitleOne, string _ctvTitleTwo, vector<nameStruct> _createdTextVectorOne, vector<nameStruct> _createdTextVectorTwo, int _ctvNumItems, int _ctvNumItemsTwo){
+        
+        ctvTitleOne = _ctvTitleOne;
+        ctvTitleTwo = _ctvTitleTwo;
+        ctvNumItems = _ctvNumItems;
+        ctvNumItemsTwo = _ctvNumItemsTwo;
+        createdTextVectorOne = _createdTextVectorOne;
+        createdTextVectorTwo = _createdTextVectorTwo;
+    }
+    
+};
+
 class testApp : public ofBaseApp{
     public:
         void setup();
@@ -76,25 +98,28 @@ class testApp : public ofBaseApp{
         float maxLocation(vector<nameStruct>_structofNames);
         static bool sortOnAppearances(const nameStruct &alpha, const nameStruct &beta);
         static bool sortOnName(const nameStruct &alpha, const nameStruct &beta);
-        void drawVizVector(string _vectorTitle, vector<nameStruct> &_theVectortoDraw, string _sort, int _startItems, int _numItems, int _fontSize, 
-                           bool _connectionMoused = FALSE );
-        vector<foundPair > findConnection(vector<nameStruct> &textOne, vector<nameStruct> &textTwo, int _startItems, int _startItemsTwo, int _numItems, int _numItemsTwo);
+        void drawVizVector(string _vectorTitle, vector<nameStruct> &_theVectortoDraw, string _sort, int _startItems, 
+                                        int _numItems, int _fontSize, bool _connectionMoused = FALSE );
+        vector<foundPair > findConnection(vector<nameStruct> &textOne, vector<nameStruct> &textTwo, int _startItems,  
+                                                                int _startItemsTwo, int _numItems, int _numItemsTwo);
         void drawConnection(vector<foundPair> &foundMatches, bool _connectionMoused = FALSE);
         void highlightConnection(foundPair &highlightedMatch);
         void drawName(nameStruct &text);
         void drawConnectionFacts(nameStruct _left, nameStruct _right);
         void drawBackground();
     
-        ofxTileSaver saveVector;
+        ofDirectory theDir;
     
         int numItems;
         int numItemsTwo;
         int startItems;
         int startItemsTwo;
+        int pairNumber;
     
-        vector<nameStruct> vizQuran;
-        vector<nameStruct> vizNT;
-        vector<foundPair> QandNT;
+        vector<nameStruct> firstText;
+        vector<nameStruct> secondText;
+        vector<textPair> textPairFromDirectory;
+        vector<foundPair> textConnectionsFound;
     
         ofTrueTypeFont myFont;
         ofTrueTypeFont bgFont;
@@ -104,6 +129,9 @@ class testApp : public ofBaseApp{
     
         ofImage background;
         string inputItems;
+        string path;
+        string firstTextTitle;
+        string secondTextTitle;
       
 };
 

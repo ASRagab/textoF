@@ -16,20 +16,30 @@ bool testApp::sortOnName(const nameStruct &alpha, const nameStruct &beta){
 
 //--------------------------------------------------------------
 void testApp::setup(){
-    
-    ofBackground(0,0,0);
+    background.loadImage("textProcessingBackground.png");
     connectionMousedOver = FALSE;
-    vizQuran = createVisualizationVector("Quran.txt", 0);
-    vizNT  = createVisualizationVector("newTestament.txt",1);
-    //numItems = 100; 
-   numItems = vizQuran.size();
-    //numItemsTwo = 100; 
-   numItemsTwo = vizNT.size();
+    
+    path = "textFiles/";
+    theDir.open(path);
+    theDir.listDir();
+    for(int h =0; h < theDir.size()-1; h++){
+        firstTextTitle = theDir.getName(h);
+        secondTextTitle = theDir.getName(h+1);
+        
+        firstText = createVisualizationVector(path+firstTextTitle, 0);
+        secondText  = createVisualizationVector(path+secondTextTitle,1);
+        textPair pair = textPair(firstTextTitle, secondTextTitle, firstText, secondText, firstText.size(), secondText.size());
+        textPairFromDirectory.push_back(pair);
+        }
+    pairNumber = 0;
+
+    numItems = 0;
+    numItemsTwo = 0;
     startItems = 0;
     startItemsTwo = 0;
-    myFont.loadFont("Verdana.ttf", 20, true, false, true);
+    myFont.loadFont("MyriadPro-Regular.otf", 20, true, false, true);
     bgFont.loadFont("Cambria Italic.ttf", 14, true, false, true);
-    QandNT = findConnection(vizQuran, vizNT, startItems, startItemsTwo, numItems, numItemsTwo);
+    textConnectionsFound = findConnection(textPairFromDirectory[pairNumber].createdTextVectorOne, textPairFromDirectory[pairNumber].createdTextVectorTwo, startItems, startItemsTwo, textPairFromDirectory[pairNumber].ctvNumItems,textPairFromDirectory[pairNumber].ctvNumItemsTwo);
     bsaveScreen = FALSE;
     /*ofBuffer ntFile = ofBufferFromFile("newTestament.txt");
         string ntAsString = ntFile;
@@ -40,40 +50,58 @@ void testApp::setup(){
         ntFile.set(ntAsString.c_str(), ntAsString.size());
         ofBufferToFile("newTestament2.txt", ntFile);*/
         inputItems = "";
-        saveVector.init(1,1, true);
 }
 
 //--------------------------------------------------------------
 void testApp::update(){
-QandNT = findConnection(vizQuran, vizNT, startItems, startItemsTwo, numItems, numItemsTwo);
-    
+    if(pairNumber < textPairFromDirectory.size() && pairNumber >= 0){
+    if(inputItems.empty()){
+        numItems = textPairFromDirectory[pairNumber].ctvNumItems;
+        numItemsTwo = textPairFromDirectory[pairNumber].ctvNumItemsTwo;
+        }
+        textConnectionsFound = findConnection(textPairFromDirectory[pairNumber].createdTextVectorOne, textPairFromDirectory[pairNumber].createdTextVectorTwo, startItems, startItemsTwo, numItems, numItemsTwo);
+    }
+    else {
+        pairNumber =0;
+        numItems = textPairFromDirectory[pairNumber].ctvNumItems;
+        numItemsTwo = textPairFromDirectory[pairNumber].ctvNumItemsTwo;
+        textConnectionsFound = findConnection(textPairFromDirectory[pairNumber].createdTextVectorOne, textPairFromDirectory[pairNumber].createdTextVectorTwo, startItems, startItemsTwo, numItems, numItemsTwo);
+            }
+         
+        
 }
 
 //--------------------------------------------------------------
 void testApp::draw(){
-    if(bsaveScreen) {saveVector.begin();}
+    cout << textPairFromDirectory.size() << "  " << pairNumber << endl;
+    if(bsaveScreen) {ofBeginSaveScreenAsPDF("textConnectionsFound_" + ofToString(ofGetSystemTime()) + "_.pdf"); cout << "saving PDF...";}
     
     ofEnableSmoothing();
     ofEnableAlphaBlending();
     ofSetColor(255,255,255);
-    bgFont.drawStringAsShapes("number of words\n to search for: " + inputItems, 25, 50);
-    if(!inputItems.empty() && (ofToInt(inputItems) <= vizQuran.size() && ofToInt(inputItems) <= vizNT.size())){
+    background.draw(0,0);
+    if(!inputItems.empty() && (ofToInt(inputItems) <= firstText.size() && ofToInt(inputItems) <= secondText.size())){
     numItems = ofToInt(inputItems);
     numItemsTwo = ofToInt(inputItems);
         }
+    
     ofSetColor(255,255,255,50);
     int fontSize = 9;
     string howToSort;
+    
     if(ofGetKeyPressed() == OF_KEY_SHIFT) howToSort = "alphabetical";
     if(ofGetKeyPressed() == OF_KEY_CTRL) howToSort = "appearances";
-    drawVizVector("Quran", vizQuran, howToSort, startItems, numItems, fontSize, connectionMousedOver); 
-    drawVizVector("New Testament", vizNT, howToSort, startItemsTwo, numItemsTwo, fontSize,   
-                                connectionMousedOver);
+    
+    drawVizVector(textPairFromDirectory[pairNumber].ctvTitleOne, textPairFromDirectory[pairNumber].
+                            createdTextVectorOne, howToSort, startItems, numItems, fontSize, connectionMousedOver); 
+    drawVizVector(textPairFromDirectory[pairNumber].ctvTitleTwo, textPairFromDirectory[pairNumber].       
+                            createdTextVectorTwo, howToSort, startItems, numItemsTwo, fontSize, connectionMousedOver); 
+    
     ofSetColor(50,255,50,50);
-    drawConnection(QandNT, connectionMousedOver);
-        if(!QandNT.empty()){
-            myFont.loadFont("Verdana.ttf", 20, true, false, true);
-            for(vector<foundPair>::iterator it = QandNT.begin(); it < QandNT.end(); it++){
+    drawConnection(textConnectionsFound, connectionMousedOver);
+        if(!textConnectionsFound.empty()){
+            myFont.loadFont("MyriadPro-Regular.otf", 20, true, false, true);
+            for(vector<foundPair>::iterator it = textConnectionsFound.begin(); it < textConnectionsFound.end(); it++){
             if(((mouseX >= (int) it->textOne.x && mouseX <= (int) (it->textOne.x + myFont.stringWidth(it->theMatchedName))) && 
                 (mouseY <= (int) it->textOne.y && mouseY >= (int)(it->textOne.y - myFont.stringHeight(it->theMatchedName)))) ||
                ((mouseX >= (int) it->textTwo.x && mouseX <= (int) (it->textTwo.x + myFont.stringWidth(it->theMatchedName))) && 
@@ -92,13 +120,16 @@ void testApp::draw(){
             else connectionMousedOver = FALSE;
         }  
             }
-    ofSetColor(100,50,155); 
-    ofCircle(2000,2000, 200);
+    ofSetColor(50,255,50); 
+   string enterSearchItems = "number of words\n to search for: "; 
     if(bsaveScreen) {
-        saveVector.end();     
+        bgFont.drawStringAsShapes(enterSearchItems + inputItems, ofGetWidth() - (bgFont.stringWidth(enterSearchItems +inputItems) + 20), 60); 
+        ofEndSaveScreenAsPDF();
+        cout << endl << "ending save screen...";
         }
-    //system(("open " + ofToDataPath(theFilename)).c_str());
+        else bgFont.drawString(enterSearchItems + inputItems, ofGetWidth() - (bgFont.stringWidth(enterSearchItems +inputItems) + 20), 60); 
     
+    bsaveScreen =FALSE;
 }
 //----------------------------------
 
@@ -107,34 +138,22 @@ void testApp::drawConnectionFacts(nameStruct _left, nameStruct _right){
     int alpha = 200;
     ofSetColor(0,0,0, alpha);
      ofFill();
-    float factOffset = 200;
-    float factOffsetRight = 150;
+    float factOffsetLeft = 100;
+    float factOffsetRight = 50;
     float xAvg = (_left.point.x+_right.point.x)/2.0;
     float yAvg = (_left.point.y+_right.point.y)/2.0;
     ofSetColor(255,255,255, alpha);
     if(bsaveScreen){
-    if(yAvg >= ofGetWindowHeight()/2.0){
-bgFont.drawStringAsShapes("appears\n " + ofToString(_left.count)+ " times", _left.point.x-factOffset, _left.point.y);
-bgFont.drawStringAsShapes("appears\n " + ofToString(_right.count)+ " times", _right.point.x+factOffsetRight, _right.point.y);
-    }
-    if(yAvg < ofGetWindowHeight()/2.0){
-bgFont.drawStringAsShapes("appears \n" + ofToString(_left.count)+ " times", _left.point.x-factOffset, _left.point.y);
-bgFont.drawStringAsShapes("appears \n" + ofToString(_right.count)+ " times", _right.point.x+factOffsetRight, _right.point.y);
-    }
-    }
+        bgFont.drawStringAsShapes("appears\n " + ofToString(_left.count)+ " times", _left.point.x-factOffsetLeft, _left.point.y);
+        bgFont.drawStringAsShapes("appears\n " + ofToString(_right.count)+ " times", _right.point.x+factOffsetRight+myFont.stringWidth(_right.theName), _right.point.y);
+        }
     else{
-        if(yAvg >= ofGetWindowHeight()/2.0){
-            bgFont.drawString("appears\n " + ofToString(_left.count)+ " times", _left.point.x-factOffset, _left.point.y);
-            bgFont.drawString("appears\n " + ofToString(_right.count)+ " times", _right.point.x+factOffsetRight, _right.point.y);
+        bgFont.drawString("appears\n " + ofToString(_left.count)+ " times", _left.point.x-factOffsetLeft, _left.point.y);
+        bgFont.drawString("appears\n " + ofToString(_right.count)+ " times", _right.point.x+factOffsetRight+ myFont.stringWidth(_right.theName), _right.point.y);
         }
-        if(yAvg < ofGetWindowHeight()/2.0){
-            bgFont.drawString("appears \n" + ofToString(_left.count)+ " times", _left.point.x-factOffset, _left.point.y);
-            bgFont.drawString("appears \n" + ofToString(_right.count)+ " times", _right.point.x+factOffsetRight, _right.point.y);
-        }
-    }
-    
+           
 }
-//-----------------------
+//-------------------------------
 void testApp::highlightConnection(foundPair &highlightedMatch){
     int offsetCurve = 200;
         ofNoFill();
@@ -175,13 +194,15 @@ void testApp::drawName(nameStruct &text){
 }
 //------------------------------------
 void testApp::drawVizVector(string _vectorTitle, vector<nameStruct> & _theVectortoDraw, string _sort, int _startItems, int _numItems, int _fontSize, bool _connectionMoused){
+    _vectorTitle = _vectorTitle.substr(0, _vectorTitle.length()-4);
     int top =25;
     ofSetColor(50,255,50);
     bgFont.loadFont("Cambria Italic.ttf", 14, true, false, true);
-    bgFont.drawStringAsShapes(_vectorTitle, _theVectortoDraw[0].point.x, top);
+    if(bsaveScreen) bgFont.drawStringAsShapes(_vectorTitle, _theVectortoDraw[0].point.x, top);
+    else bgFont.drawString(_vectorTitle, _theVectortoDraw[0].point.x, top);
     if(_connectionMoused) {ofSetColor(150,150,150,20); _fontSize = 12;}
     else ofSetColor(255,255,255,50); 
-    myFont.loadFont("Verdana.ttf", _fontSize, true, false, true);
+    myFont.loadFont("MyriadPro-Regular.otf", _fontSize, true, false, true);
     for(int s = _startItems; s < _startItems +_numItems; s++){
     drawName(_theVectortoDraw[s]);
     }
@@ -208,9 +229,9 @@ vector<nameStruct> testApp::createVisualizationVector(string pathToData, int fla
     
     float _minLocation = minLocation(visualizationVector);
     float _maxLocation = maxLocation(visualizationVector);
-    
     for(int f = 0; f < visualizationVector.size(); f++){
-        visualizationVector[f].setLocation(visualizationVector[f].point.x, ofMap(visualizationVector[f].point.y,_minLocation, _maxLocation, 75.0, (float) ofGetWindowHeight() - 25.0));
+       
+        visualizationVector[f].setLocation(visualizationVector[f].point.x, ofMap(visualizationVector[f].point.y,_minLocation, _maxLocation, 60 , (float) ofGetWindowHeight()-20.0));
     }
     return visualizationVector;
 }
@@ -248,7 +269,6 @@ float testApp::minLocation(vector<nameStruct> _structofNames){
     aPoint.y = (float) sumOfLocations/appearances;
      if(flagPosition ==0) aPoint.x = 0.30*(float) ofGetWindowWidth();
     if(flagPosition ==1) aPoint.x = .70*(float) ofGetWindowWidth();
-     //3/8 factor is to divide the screen into 4 parts and center it in the second
     nameStruct _theName = nameStruct(aPoint, token, appearances);
     return _theName; 
 }
@@ -298,6 +318,9 @@ vector<string> testApp::cleanPunctuation(string filenname){
             textAsString[i] = ' ';
         }
         if (textAsString[i] == ';'){
+            textAsString[i] = ' ';
+        }
+        if (textAsString[i] == '\''){
             textAsString[i] = ' ';
         }
     }
@@ -376,6 +399,9 @@ void testApp::keyPressed(int key){
         if (key == '8') inputItems += "8";
         if (key == '9') inputItems += "9";
     }
+    
+    if(key== OF_KEY_RIGHT) pairNumber++;
+    if(key == OF_KEY_LEFT) pairNumber--;
 
     if (key == OF_KEY_DEL || key == OF_KEY_BACKSPACE){
         if (inputItems.size() > 0){
@@ -384,24 +410,24 @@ void testApp::keyPressed(int key){
         }
 
         if(key == OF_KEY_DOWN){
-        sort(vizQuran.begin(), vizQuran.end(), testApp::sortOnName);
-        sort(vizNT.begin(), vizNT.end(), testApp::sortOnName);
+        sort(firstText.begin(), firstText.end(), testApp::sortOnName);
+        sort(secondText.begin(), secondText.end(), testApp::sortOnName);
         
-            if(startItems + numItems > vizQuran.size()) startItems =0;
+            if(startItems + numItems > firstText.size()-numItems) startItems =0;
             else startItems += numItems; 
             
-            if(startItemsTwo + numItemsTwo > vizNT.size()) startItemsTwo = 0;
+            if(startItemsTwo + numItemsTwo > secondText.size() - numItemsTwo) startItemsTwo = 0;
             else startItemsTwo += numItemsTwo;
         }
     
     if(key == OF_KEY_UP){
-        sort(vizQuran.begin(), vizQuran.end(), testApp::sortOnAppearances);
-        sort(vizNT.begin(), vizNT.end(), testApp::sortOnAppearances);
+        sort(firstText.begin(), firstText.end(), testApp::sortOnAppearances);
+        sort(secondText.begin(), secondText.end(), testApp::sortOnAppearances);
        
-        if(startItems + numItems > vizQuran.size()) startItems =0;
+        if(startItems + numItems > firstText.size()-numItems) startItems =0;
         else startItems += numItems; 
         
-        if(startItemsTwo + numItemsTwo > vizNT.size()) startItemsTwo = 0;
+        if(startItemsTwo + numItemsTwo > secondText.size()-numItems) startItemsTwo = 0;
         else startItemsTwo += numItemsTwo;    
     }
     
@@ -410,10 +436,9 @@ void testApp::keyPressed(int key){
         startItemsTwo = 0;
     }
     
-    if(key =='s') {bsaveScreen = TRUE; saveVector.finish("QandNTMap.png", true);}
-    else bsaveScreen = FALSE;
-
-    
+    if(key =='s') {bsaveScreen = TRUE; //saveVector.finish("textConnectionsFoundMap.png", true);
+    }
+    else bsaveScreen = FALSE;    
 }
 
 //--------------------------------------------------------------
