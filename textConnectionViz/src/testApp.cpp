@@ -16,77 +16,84 @@ bool testApp::sortOnName(const nameStruct &alpha, const nameStruct &beta){
 
 //--------------------------------------------------------------
 void testApp::setup(){
+    
+    fbo.allocate(ofGetWidth(), ofGetHeight());
+    pix.allocate(ofGetWidth(),ofGetHeight(),OF_IMAGE_COLOR_ALPHA);
     background.loadImage("textProcessingBackground.png");
     connectionMousedOver = FALSE;
-    
+    height = ofGetHeight() -40;
     path = "textFiles/";
     theDir.open(path);
     theDir.listDir();
     for(int h =0; h < theDir.size()-1; h++){
+        for(int i = h+1; i <theDir.size(); i++){
         firstTextTitle = theDir.getName(h);
-        secondTextTitle = theDir.getName(h+1);
+        secondTextTitle = theDir.getName(i);
         
         firstText = createVisualizationVector(path+firstTextTitle, 0);
         secondText  = createVisualizationVector(path+secondTextTitle,1);
         textPair pair = textPair(firstTextTitle, secondTextTitle, firstText, secondText, firstText.size(), secondText.size());
         textPairFromDirectory.push_back(pair);
         }
+    }
     pairNumber = 0;
 
     numItems = 0;
     numItemsTwo = 0;
     startItems = 0;
     startItemsTwo = 0;
+    
     myFont.loadFont("MyriadPro-Regular.otf", 20, true, false, true);
     bgFont.loadFont("Cambria Italic.ttf", 14, true, false, true);
-    textConnectionsFound = findConnection(textPairFromDirectory[pairNumber].createdTextVectorOne, textPairFromDirectory[pairNumber].createdTextVectorTwo, startItems, startItemsTwo, textPairFromDirectory[pairNumber].ctvNumItems,textPairFromDirectory[pairNumber].ctvNumItemsTwo);
+    
+    textConnectionsFound = findConnection(textPairFromDirectory[pairNumber].createdTextVectorOne,textPairFromDirectory[pairNumber].createdTextVectorTwo, startItems, startItemsTwo, textPairFromDirectory[pairNumber].ctvNumItems,textPairFromDirectory[pairNumber].ctvNumItemsTwo);
     bsaveScreen = FALSE;
-    /*ofBuffer ntFile = ofBufferFromFile("newTestament.txt");
-        string ntAsString = ntFile;
-        RegularExpression myRegEx("[0-9]+:[0-9]+"); 
-        RegularExpression::Match match;
-        int found = myRegEx.subst(ntAsString," ", 0x10000000);
-        myRegEx.subst(ntAsString, " ");
-        ntFile.set(ntAsString.c_str(), ntAsString.size());
-        ofBufferToFile("newTestament2.txt", ntFile);*/
-        inputItems = "";
+    inputItems = "";
+    foundConnections = textConnectionsFound.size();
 }
 
 //--------------------------------------------------------------
 void testApp::update(){
+    if(!inputItems.empty() && (ofToInt(inputItems) < firstText.size() && ofToInt(inputItems) < secondText.size())){
+        startItems = 0;
+        startItemsTwo =0;
+        numItems = ofToInt(inputItems);
+        numItemsTwo = ofToInt(inputItems);
+    }
+    else if(ofToInt(inputItems) >= firstText.size() || ofToInt(inputItems) >= secondText.size()){
+        startItems = 0;
+        startItemsTwo = 0;
+        numItems = firstText.size();
+        numItemsTwo = secondText.size();
+    }
+    
     if(pairNumber < textPairFromDirectory.size() && pairNumber >= 0){
     if(inputItems.empty()){
         numItems = textPairFromDirectory[pairNumber].ctvNumItems;
         numItemsTwo = textPairFromDirectory[pairNumber].ctvNumItemsTwo;
         }
-        textConnectionsFound = findConnection(textPairFromDirectory[pairNumber].createdTextVectorOne, textPairFromDirectory[pairNumber].createdTextVectorTwo, startItems, startItemsTwo, numItems, numItemsTwo);
+        textConnectionsFound = findConnection(textPairFromDirectory[pairNumber].createdTextVectorOne,textPairFromDirectory[pairNumber].createdTextVectorTwo, startItems, startItemsTwo, numItems, numItemsTwo);
     }
     else {
         pairNumber =0;
         numItems = textPairFromDirectory[pairNumber].ctvNumItems;
         numItemsTwo = textPairFromDirectory[pairNumber].ctvNumItemsTwo;
-        textConnectionsFound = findConnection(textPairFromDirectory[pairNumber].createdTextVectorOne, textPairFromDirectory[pairNumber].createdTextVectorTwo, startItems, startItemsTwo, numItems, numItemsTwo);
+        textConnectionsFound = findConnection(textPairFromDirectory[pairNumber].createdTextVectorOne,textPairFromDirectory[pairNumber].createdTextVectorTwo, startItems, startItemsTwo, numItems, numItemsTwo);
             }
-         
-        
+    foundConnections = textConnectionsFound.size();
 }
 
 //--------------------------------------------------------------
 void testApp::draw(){
-    cout << textPairFromDirectory.size() << "  " << pairNumber << endl;
-    if(bsaveScreen) {ofBeginSaveScreenAsPDF("textConnectionsFound_" + ofToString(ofGetSystemTime()) + "_.pdf"); cout << "saving PDF...";}
-    
+    ofBackground(255,255,255);
+    if(bsaveScreen) fbo.begin();
     ofEnableSmoothing();
     ofEnableAlphaBlending();
     ofSetColor(255,255,255);
     background.draw(0,0);
-    if(!inputItems.empty() && (ofToInt(inputItems) <= firstText.size() && ofToInt(inputItems) <= secondText.size())){
-    numItems = ofToInt(inputItems);
-    numItemsTwo = ofToInt(inputItems);
-        }
-    
+  
     ofSetColor(255,255,255,50);
-    int fontSize = 9;
+    int fontSize = 10;
     string howToSort;
     
     if(ofGetKeyPressed() == OF_KEY_SHIFT) howToSort = "alphabetical";
@@ -121,20 +128,18 @@ void testApp::draw(){
         }  
             }
     ofSetColor(50,255,50); 
-   string enterSearchItems = "number of words\n to search for: "; 
-    if(bsaveScreen) {
-        bgFont.drawStringAsShapes(enterSearchItems + inputItems, ofGetWidth() - (bgFont.stringWidth(enterSearchItems +inputItems) + 20), 60); 
-        ofEndSaveScreenAsPDF();
-        cout << endl << "ending save screen...";
-        }
-        else bgFont.drawString(enterSearchItems + inputItems, ofGetWidth() - (bgFont.stringWidth(enterSearchItems +inputItems) + 20), 60); 
+   string enterSearchItems = "number of words\n to search for: ";
+    string itemsFound = "Total Connections Found:\n" + ofToString(foundConnections);
     
-    bsaveScreen =FALSE;
+        bgFont.drawString(enterSearchItems + inputItems, ofGetWidth() - (bgFont.stringWidth(enterSearchItems +inputItems) + 20), 60);
+        bgFont.drawString(itemsFound, ((float)ofGetWidth()-bgFont.stringWidth(itemsFound))/2, height);
+    if(bsaveScreen) fbo.end();
+    
+            bsaveScreen =FALSE;
 }
 //----------------------------------
-
 //__________
-void testApp::drawConnectionFacts(nameStruct _left, nameStruct _right){
+void testApp::drawConnectionFacts(nameStruct &_left, nameStruct &_right){
     int alpha = 200;
     ofSetColor(0,0,0, alpha);
      ofFill();
@@ -143,15 +148,8 @@ void testApp::drawConnectionFacts(nameStruct _left, nameStruct _right){
     float xAvg = (_left.point.x+_right.point.x)/2.0;
     float yAvg = (_left.point.y+_right.point.y)/2.0;
     ofSetColor(255,255,255, alpha);
-    if(bsaveScreen){
-        bgFont.drawStringAsShapes("appears\n " + ofToString(_left.count)+ " times", _left.point.x-factOffsetLeft, _left.point.y);
-        bgFont.drawStringAsShapes("appears\n " + ofToString(_right.count)+ " times", _right.point.x+factOffsetRight+myFont.stringWidth(_right.theName), _right.point.y);
-        }
-    else{
         bgFont.drawString("appears\n " + ofToString(_left.count)+ " times", _left.point.x-factOffsetLeft, _left.point.y);
         bgFont.drawString("appears\n " + ofToString(_right.count)+ " times", _right.point.x+factOffsetRight+ myFont.stringWidth(_right.theName), _right.point.y);
-        }
-           
 }
 //-------------------------------
 void testApp::highlightConnection(foundPair &highlightedMatch){
@@ -189,19 +187,17 @@ vector<foundPair> testApp::findConnection(vector<nameStruct> &textOne, vector<na
     }
 //_______________
 void testApp::drawName(nameStruct &text){
-    if(bsaveScreen) myFont.drawStringAsShapes(text.theName, text.point.x, text.point.y);
-    else myFont.drawString(text.theName, text.point.x, text.point.y);
+        myFont.drawString(text.theName, text.point.x, text.point.y);
 }
 //------------------------------------
-void testApp::drawVizVector(string _vectorTitle, vector<nameStruct> & _theVectortoDraw, string _sort, int _startItems, int _numItems, int _fontSize, bool _connectionMoused){
+void testApp::drawVizVector(string _vectorTitle, vector<nameStruct>  &_theVectortoDraw, string _sort, int _startItems, int _numItems, int _fontSize, bool _connectionMoused){
     _vectorTitle = _vectorTitle.substr(0, _vectorTitle.length()-4);
     int top =25;
     ofSetColor(50,255,50);
     bgFont.loadFont("Cambria Italic.ttf", 14, true, false, true);
-    if(bsaveScreen) bgFont.drawStringAsShapes(_vectorTitle, _theVectortoDraw[0].point.x, top);
-    else bgFont.drawString(_vectorTitle, _theVectortoDraw[0].point.x, top);
-    if(_connectionMoused) {ofSetColor(150,150,150,20); _fontSize = 12;}
-    else ofSetColor(255,255,255,50); 
+    bgFont.drawString(_vectorTitle, _theVectortoDraw[0].point.x, top);
+    if(_connectionMoused) {ofSetColor(150,150,150,75); /*_fontSize = 10;*/}
+    else ofSetColor(255,255,255,100); 
     myFont.loadFont("MyriadPro-Regular.otf", _fontSize, true, false, true);
     for(int s = _startItems; s < _startItems +_numItems; s++){
     drawName(_theVectortoDraw[s]);
@@ -231,12 +227,12 @@ vector<nameStruct> testApp::createVisualizationVector(string pathToData, int fla
     float _maxLocation = maxLocation(visualizationVector);
     for(int f = 0; f < visualizationVector.size(); f++){
        
-        visualizationVector[f].setLocation(visualizationVector[f].point.x, ofMap(visualizationVector[f].point.y,_minLocation, _maxLocation, 60 , (float) ofGetWindowHeight()-20.0));
+        visualizationVector[f].setLocation(visualizationVector[f].point.x, ofMap(visualizationVector[f].point.y,_minLocation, _maxLocation, 60 , (float) ofGetHeight()-20.0));
     }
     return visualizationVector;
 }
 //______________________________________
-float testApp::maxLocation(vector<nameStruct> _structofNames){
+float testApp::maxLocation(vector<nameStruct> &_structofNames){
     float _maxLocation = _structofNames[0].point.y;
     for(int i = 0; i<_structofNames.size(); i++){
         if(_structofNames[i].point.y > _maxLocation) _maxLocation = _structofNames[i].point.y;
@@ -244,7 +240,7 @@ float testApp::maxLocation(vector<nameStruct> _structofNames){
     return _maxLocation;
 }
 //______________________________________
-float testApp::minLocation(vector<nameStruct> _structofNames){
+float testApp::minLocation(vector<nameStruct> &_structofNames){
     float _minLocation = _structofNames[0].point.y;
     for(int i = 0; i<_structofNames.size(); i++){
         if(_structofNames[i].point.y < _minLocation) _minLocation = _structofNames[i].point.y;
@@ -252,7 +248,7 @@ float testApp::minLocation(vector<nameStruct> _structofNames){
     return _minLocation;
 }
 //_________________________
- nameStruct testApp::createNameStructs(string token, vector<string>_baseText, int flagPosition){
+ nameStruct testApp::createNameStructs(string token, vector<string> &_baseText, int flagPosition){
     //function should return nameStruct with a point, properName and appearances for sizing this can be called to create vector of structs
     
     int appearances =1;
@@ -267,8 +263,8 @@ float testApp::minLocation(vector<nameStruct> _structofNames){
         }
     }
     aPoint.y = (float) sumOfLocations/appearances;
-     if(flagPosition ==0) aPoint.x = 0.30*(float) ofGetWindowWidth();
-    if(flagPosition ==1) aPoint.x = .70*(float) ofGetWindowWidth();
+     if(flagPosition ==0) aPoint.x = 0.30*(float) ofGetWidth();
+    if(flagPosition ==1) aPoint.x = .70*(float) ofGetWidth();
     nameStruct _theName = nameStruct(aPoint, token, appearances);
     return _theName; 
 }
@@ -321,6 +317,18 @@ vector<string> testApp::cleanPunctuation(string filenname){
             textAsString[i] = ' ';
         }
         if (textAsString[i] == '\''){
+            textAsString[i] = ' ';
+        }
+        if (textAsString[i] == '['){
+            textAsString[i] = ' ';
+        }
+        if (textAsString[i] == ']'){
+            textAsString[i] = ' ';
+        }
+        if (textAsString[i] == '('){
+            textAsString[i] = ' ';
+        }
+        if (textAsString[i] == ')'){
             textAsString[i] = ' ';
         }
     }
@@ -387,7 +395,8 @@ void testApp::drawBackground(){
 //--------------------------------------------------------------
 void testApp::keyPressed(int key){
     
-    if (inputItems.length() <= 4){
+    
+    if (inputItems.length() <= 3){
         if (key == '0') inputItems += "0";
         if (key == '1') inputItems += "1";
         if (key == '2') inputItems += "2";
@@ -436,9 +445,11 @@ void testApp::keyPressed(int key){
         startItemsTwo = 0;
     }
     
-    if(key =='s') {bsaveScreen = TRUE; //saveVector.finish("textConnectionsFoundMap.png", true);
+    if(key =='s') {
+        bsaveScreen = TRUE;   
+        fbo.readToPixels(pix);
+        ofSaveImage(pix, "testimage.png", OF_IMAGE_QUALITY_BEST);
     }
-    else bsaveScreen = FALSE;    
 }
 
 //--------------------------------------------------------------

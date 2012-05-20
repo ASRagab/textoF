@@ -1,6 +1,6 @@
 #pragma once
 #include "ofMain.h"
-#include "ofxTileSaver.h"
+
 
 
 class nameStruct{
@@ -92,29 +92,33 @@ class testApp : public ofBaseApp{
         vector<string> properNames(vector<string> _words);
         void writeNamesToFile(vector<string> _names, string toFilePath);
         vector<string> uniqueNames(vector<string> _words);
-        nameStruct createNameStructs(string token, vector<string>_baseText, int flagPosition);
+        nameStruct createNameStructs(string token, vector<string> &_baseText, int flagPosition);
         vector<nameStruct> createVisualizationVector(string pathToData, int flagPosition);
-        float minLocation(vector<nameStruct> _structofNames);
-        float maxLocation(vector<nameStruct>_structofNames);
+        float minLocation(vector<nameStruct> &_structofNames);
+        float maxLocation(vector<nameStruct>&_structofNames);
         static bool sortOnAppearances(const nameStruct &alpha, const nameStruct &beta);
         static bool sortOnName(const nameStruct &alpha, const nameStruct &beta);
         void drawVizVector(string _vectorTitle, vector<nameStruct> &_theVectortoDraw, string _sort, int _startItems, 
                                         int _numItems, int _fontSize, bool _connectionMoused = FALSE );
-        vector<foundPair > findConnection(vector<nameStruct> &textOne, vector<nameStruct> &textTwo, int _startItems,  
-                                                                int _startItemsTwo, int _numItems, int _numItemsTwo);
+        vector<foundPair > findConnection(vector<nameStruct> &textOne, vector<nameStruct> &textTwo, int 
+                                            _startItems, int _startItemsTwo, int _numItems, int _numItemsTwo);
         void drawConnection(vector<foundPair> &foundMatches, bool _connectionMoused = FALSE);
         void highlightConnection(foundPair &highlightedMatch);
         void drawName(nameStruct &text);
-        void drawConnectionFacts(nameStruct _left, nameStruct _right);
+        void drawConnectionFacts(nameStruct &_left, nameStruct &_right);
         void drawBackground();
+       
     
         ofDirectory theDir;
+        
     
         int numItems;
         int numItemsTwo;
         int startItems;
         int startItemsTwo;
         int pairNumber;
+        int foundConnections;
+        float height;
     
         vector<nameStruct> firstText;
         vector<nameStruct> secondText;
@@ -128,6 +132,8 @@ class testApp : public ofBaseApp{
         bool bsaveScreen;
     
         ofImage background;
+        ofFbo fbo;
+        ofPixels pix;
         string inputItems;
         string path;
         string firstTextTitle;
